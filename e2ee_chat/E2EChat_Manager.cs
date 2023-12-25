@@ -72,7 +72,7 @@ public class E2EChatManager
         }
     }
 
-    private void Menu()
+    private async void Menu()
     { 
         Console.WriteLine("Welcome "+ _loggedInUser.Username);
         while (true)
@@ -82,7 +82,8 @@ public class E2EChatManager
             switch (option)
             {
                 case "1":
-                    // Messages
+                    Console.Clear();
+                    await Messaging();
                     break;
                 case "2":
                     Console.WriteLine("Logging out...");
@@ -100,12 +101,20 @@ public class E2EChatManager
 
     private static async Task Messaging()
     {
-        Console.WriteLine("Email of the person you want to chat: ");
+        Console.WriteLine("Email of the person you want to chat with: ");
         var receiver = Console.ReadLine();
+        Console.WriteLine("Chat with " + receiver);
         
         var listener = new MessageListener(_loggedInUser);
         var listenerTask = Task.Run(() => listener.Start());
         
+        var publisher = new MessagePublisher();
+        while (true)
+        {
+            var msg = Console.ReadLine();
+            publisher.PublishMessage(receiver, _loggedInUser.Username, msg);
+            if (msg.ToLower() == "exit") break;
+        }
         await listenerTask;
     }
 

@@ -18,16 +18,18 @@ public class MessagePublisher : IMessagePublisher
         _bus = RabbitHutch.CreateBus(_config.GetConnectionString("RabbitMQ"));
     }
 
-    public void PublishMessage(string username, string plaintextMsg)
+    public void PublishMessage(string receiver,string publisher, string plaintextMsg)
     {
-        Console.WriteLine("Publish Message ");
         var message = new Message
         {
-            Username = username,
+            Publisher = publisher,
+            Receiver = receiver,
             PlainTextMesasge = plaintextMsg
         };
-        _bus.PubSub.Publish(message, "newMessage");
-        Console.WriteLine("Message published with username " + username+ " and msg: " + plaintextMsg);
+        // Declaring exchange
+        _bus.Advanced.ExchangeDeclare("user_exchange", ExchangeType.Topic);
+        // publish message with routing key as username
+        _bus.PubSub.Publish(message,$"user.{receiver}");
     }
 
 }

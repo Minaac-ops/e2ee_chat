@@ -1,10 +1,12 @@
+using e2ee_chat.Core.Interfaces.Messaging;
 using e2ee_chat.Core.Models;
+using e2ee_chat.Infrastructure.Schemas;
 using EasyNetQ;
 using Microsoft.Extensions.Configuration;
 
 namespace e2ee_chat.Infrastructure.Messaging;
 
-public class MessageListener
+public class MessageListener : IMessageListener
 {
     IBus _bus;
     private readonly IConfiguration _config;
@@ -17,22 +19,31 @@ public class MessageListener
         _config = new ConfigurationBuilder()
             .AddJsonFile(appSettings)
             .Build();
+
     }
 
-    public void Start()
+    public async Task Start()
     {
-        _bus = RabbitHutch.CreateBus(_config.GetConnectionString("RabbitMQ") ?? throw new InvalidOperationException("Connection string is null"));
-        _bus.PubSub.Subscribe<Message>("Message", HandleMessageReceived,x => x.WithTopic("newMessage"));
-
-        lock (this)
+        while (true)
         {
-            Monitor.Wait(this);
+            _bus = RabbitHutch.CreateBus(_config.GetConnectionString("RabbitMQ") ?? throw  new InvalidOperationException("Connection string is null"));
+        
+            await _bus.PubSub.SubscribeAsync<Message>($"user.{_loggedInUser}" ,message => HandleMessageReceived(message), x => x.WithTopic($"user.{_loggedInUser}"));
+
+            lock (this)
+            {
+                Monitor.Wait(this);
+            }
         }
     }
 
     private void HandleMessageReceived(Message msg)
     {
-        Console.WriteLine(msg.PlainTextMesasge);
-        Console.WriteLine("Message: "+msg.PlainTextMesasge+" from: " + msg.Username);
+        Console.WriteLine($"{msg.Publisher}: {msg.PlainTextMesasge}");
+    }
+
+    public Task Listen()
+    {
+        throw new NotImplementedException();
     }
 }

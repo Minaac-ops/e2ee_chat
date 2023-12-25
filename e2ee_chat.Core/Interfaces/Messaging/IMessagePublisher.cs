@@ -2,5 +2,5 @@ namespace e2ee_chat.Core.Interfaces.Messaging;
 
 public interface IMessagePublisher
 {
-    public void PublishMessage(string username, string plaintextMsg);
+    void PublishMessage(string receiver, string publisher, string plaintextMsg);
 }
