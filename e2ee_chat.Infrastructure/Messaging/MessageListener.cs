@@ -34,11 +34,10 @@ public class MessageListener : IMessageListener
 
         while (true)
         {
-            await _bus.PubSub.SubscribeAsync<Message>($"user.{_loggedInUser}" ,message => HandleMessageReceived(message), x => x.WithTopic($"user.{_loggedInUser}"));
-
+            await _bus.PubSub.SubscribeAsync<Message>(_loggedInUser.Username ,message => HandleMessageReceived(message), x => x.WithTopic($"user.{_loggedInUser.Username}"));
             await _bus.PubSub.SubscribeAsync<PublicKeyMessage>($"{_loggedInUser.Username}",
                 message => HandlePublicKeyReceived(message), x => x.WithTopic($"{_loggedInUser.Username}"));
-            Console.WriteLine("Subscribing to publickeymsg");
+            
             lock (this)
             {
                 Monitor.Wait(this);
@@ -63,8 +62,6 @@ public class MessageListener : IMessageListener
 
     private void HandleMessageReceived(Message msg)
     {
-        var base64 = Convert.ToBase64String(_sharedSecret);
-        Console.WriteLine(base64);
         Console.WriteLine($"{msg.Publisher}: {msg.PlainTextMesasge}");
     }
 

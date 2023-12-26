@@ -113,7 +113,7 @@ public class E2EChatManager
         var _instance = Crypto.Instance;
         var publicKey = _instance.GetPublicKey();
         publisher.PublishPublicKey(publicKey, _loggedInUser.Username, receiver);
-        Thread.Sleep(60000);
+        Thread.Sleep(30000);
         var sharedSecret = _instance.GetSharedSecret();
         Console.WriteLine($"Shared secret generated for: {_loggedInUser.Username}, The secret is: " + BitConverter.ToString(sharedSecret));
         while (true)
