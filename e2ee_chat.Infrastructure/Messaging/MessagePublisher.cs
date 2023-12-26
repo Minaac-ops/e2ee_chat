@@ -18,13 +18,13 @@ public class MessagePublisher : IMessagePublisher
         _bus = RabbitHutch.CreateBus(_config.GetConnectionString("RabbitMQ"));
     }
 
-    public void PublishMessage(string receiver,string publisher, string plaintextMsg)
+    public void PublishMessage(string receiver,string publisher, byte[] encryptedMsg)
     {
         var message = new Message
         {
             Publisher = publisher,
             Receiver = receiver,
-            PlainTextMesasge = plaintextMsg
+            EncryptedMessage = encryptedMsg
         };
         // publish message with routing key as username
         _bus.PubSub.Publish(message,$"user.{receiver}");

@@ -119,7 +119,7 @@ public class E2EChatManager
         while (true)
         {
             var msg = Console.ReadLine();
-            publisher.PublishMessage(receiver, _loggedInUser.Username, msg);
+            publisher.PublishMessage(receiver, _loggedInUser.Username, _instance.Encrypt(msg));
             if (msg.ToLower() == "exit") break;
         }
         await listenerTask;

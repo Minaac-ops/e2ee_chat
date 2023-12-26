@@ -62,7 +62,9 @@ public class MessageListener : IMessageListener
 
     private void HandleMessageReceived(Message msg)
     {
-        Console.WriteLine($"{msg.Publisher}: {msg.PlainTextMesasge}");
+        var instance = Crypto.Instance;
+        var decryptedMsg = instance.Decrypt(msg.EncryptedMessage);
+        Console.WriteLine($"{msg.Publisher}: {decryptedMsg}");
     }
 
     public Task Listen()
