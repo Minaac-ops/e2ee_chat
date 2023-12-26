@@ -1,12 +1,15 @@
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using e2ee_chat.Core.Interfaces;
 using e2ee_chat.Core.Models;
 
 namespace e2ee_chat.Util;
 
-public class Auth: IAuthUtil 
+public class Auth: IAuthUtil
 {
+    private byte[] _sharedSecret;
+    
     public UserModel PasswordHasher(string email, string username, string password)
     {
         GenerateUserCredentials(password, out var iv, out var passwordSalt, out var random, out var randomString);
@@ -22,6 +25,22 @@ public class Auth: IAuthUtil
         };
         return user;
     }
+
+    public byte[] GetSharedSecret()
+    {
+        return _sharedSecret;
+    }
+
+    // public void GenerateSharedSecret(byte[] publicKey, string receiver)
+    // {
+    //     Console.WriteLine("Authutil");
+    //     using var dh = new ECDiffieHellmanCng();
+    //     dh.KeyDerivationFunction = ECDiffieHellmanKeyDerivationFunction.Hash;
+    //     dh.HashAlgorithm = CngAlgorithm.Sha512;
+    //     _sharedSecret = dh.DeriveKeyMaterial(CngKey.Import(publicKey, CngKeyBlobFormat.EccPublicBlob));
+    //     var bytestring = BitConverter.ToString(_sharedSecret);
+    //     Console.WriteLine($"Generated shared secret for {receiver}, the shared secret is {bytestring}");
+    // }
 
     private void GenerateUserCredentials(string password, out byte[] iv, out byte[] passwordSalt, out byte[] random, out string randomString)
     {

@@ -11,4 +11,5 @@ public class User
     [BsonElement("EncryptedRandom")] public byte[] EncryptedRandom { get; set; }
     [BsonElement("RandomString")] public string RandomString { get; set; }
     
+    
 }

@@ -34,7 +34,7 @@ public class UserRepository : IUserRepository
             {
                 UserId = userSchema.Id.ToString()!,
                 IV = user.IV,
-                Passwordsalt = user.PasswordSalt
+                Passwordsalt = user.PasswordSalt,
             });
             Console.WriteLine("Your new account is set up with email: " + user.Email+ " and username: " + user.Username);
         }

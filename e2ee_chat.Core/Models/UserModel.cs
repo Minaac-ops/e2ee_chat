@@ -10,7 +10,7 @@ public class UserModel
     public byte[] EncryptedRandom { get; set; }
     public byte[] IV { get; set; }
     public byte[] PasswordSalt { get; set; }
-
+    
     public bool IsPasswordValid()
     {
         return Password.Length > 8 &&

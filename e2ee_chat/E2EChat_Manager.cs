@@ -4,6 +4,7 @@ using e2ee_chat.Core.Interfaces.Messaging;
 using e2ee_chat.Core.Interfaces.Services;
 using e2ee_chat.Core.Models;
 using e2ee_chat.Infrastructure.Messaging;
+using e2ee_chat.Util;
 
 namespace e2ee_chat;
 
@@ -99,16 +100,22 @@ public class E2EChatManager
         }
     }
 
-    private static async Task Messaging()
+    private async Task Messaging()
     {
         Console.WriteLine("Email of the person you want to chat with: ");
         var receiver = Console.ReadLine();
         Console.WriteLine("Chat with " + receiver);
+        //var sharedSecret = _authUtil.GenerateSharedSecret(_loggedInUser.PublicKey);
         
-        var listener = new MessageListener(_loggedInUser);
+        var listener = new MessageListener(_loggedInUser,_authUtil);
         var listenerTask = Task.Run(() => listener.Start());
-        
         var publisher = new MessagePublisher();
+        var _instance = Crypto.Instance;
+        var publicKey = _instance.GetPublicKey();
+        publisher.PublishPublicKey(publicKey, _loggedInUser.Username, receiver);
+        Thread.Sleep(60000);
+        var sharedSecret = _instance.GetSharedSecret();
+        Console.WriteLine($"Shared secret generated for: {_loggedInUser.Username}, The secret is: " + BitConverter.ToString(sharedSecret));
         while (true)
         {
             var msg = Console.ReadLine();

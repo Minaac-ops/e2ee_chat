@@ -12,7 +12,7 @@ public class UserConverter
             Email = userModel.Email,
             Username = userModel.Username,
             EncryptedRandom = userModel.EncryptedRandom,
-            RandomString = userModel.Random
+            RandomString = userModel.Random,
         };
     }
 

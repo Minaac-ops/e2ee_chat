@@ -26,10 +26,19 @@ public class MessagePublisher : IMessagePublisher
             Receiver = receiver,
             PlainTextMesasge = plaintextMsg
         };
-        // Declaring exchange
-        _bus.Advanced.ExchangeDeclare("user_exchange", ExchangeType.Topic);
         // publish message with routing key as username
         _bus.PubSub.Publish(message,$"user.{receiver}");
     }
 
+    public void PublishPublicKey(byte[] publicKey, string publisher, string receiver)
+    {
+        var message = new PublicKeyMessage
+        {
+            PublicKey = publicKey,
+            Publisher = publisher,
+            Receiver = receiver
+        };
+        _bus.PubSub.Publish(message, $"{receiver}");
+        Console.WriteLine("Published my public key to "+ receiver);
+    }
 }

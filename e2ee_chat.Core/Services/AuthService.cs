@@ -14,7 +14,7 @@ public class AuthService : IAuthService
         _userService = userService;
     }
     
-    public bool AuthenticateLogin(UserModel user, string providedPassword)
+    private bool AuthenticateLogin(UserModel user, string providedPassword)
     {
         try
         {
@@ -28,7 +28,9 @@ public class AuthService : IAuthService
             using var cs = new CryptoStream(ms, decrypt, CryptoStreamMode.Read);
             using var sr = new StreamReader(cs);
             var decryptedRandomString = sr.ReadToEnd();
-            return decryptedRandomString == user.Random;
+            if (decryptedRandomString != user.Random) return false;
+            _key = aes.Key;
+            return true;
         }
         catch (Exception e)
         {
@@ -42,7 +44,7 @@ public class AuthService : IAuthService
         var user = _userService.GetUser(email!);
         var authenticated = AuthenticateLogin(user, pass!);
         if (!authenticated) { 
-            throw new InvalidDataException("Wrong email or password.");
+            throw new InvalidDataException("Wrong username or password.");
         } return user;
     }
 }
