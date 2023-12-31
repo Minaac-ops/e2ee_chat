@@ -37,7 +37,6 @@ public class Crypto
     public void GenerateSharedSecret(byte[] publicKeyPartner)
     {
         _sharedSecret = _cng.DeriveKeyMaterial(CngKey.Import(publicKeyPartner, CngKeyBlobFormat.EccPublicBlob));
-        Console.WriteLine($"Generated shared secret for, the shared secret is {BitConverter.ToString(_sharedSecret)}");
     }
 
     public byte[] GetSharedSecret()
@@ -45,10 +44,19 @@ public class Crypto
         return _sharedSecret;
     }
 
+    private byte[] DeriveKeyChain(byte[] key, byte[] userSalt)
+    {
+        using (var kdf = new Rfc2898DeriveBytes(key,userSalt,256/8,HashAlgorithmName.SHA512))
+        {
+            return kdf.GetBytes(256 / 8);
+        }
+    }
+
     public byte[] Encrypt(string plaintxtMsg)
     {
         try
         {
+            
             using var aes = Aes.Create();
 
             aes.Key = _sharedSecret;
@@ -56,6 +64,7 @@ public class Crypto
             aes.Padding = PaddingMode.PKCS7;
 
             var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
             using (var ms = new MemoryStream())
             {
                 ms.Write(aes.IV, 0, aes.IV.Length);
@@ -66,6 +75,7 @@ public class Crypto
                         sw.Write(plaintxtMsg);
                     }
                 }
+
                 return ms.ToArray();
             }
         }
@@ -87,7 +97,7 @@ public class Crypto
             aes.Padding = PaddingMode.PKCS7;
 
             var iv = new byte[aes.BlockSize / 8];
-            Array.Copy(ciphertxtMsg, 0, iv , 0, iv.Length);
+            Array.Copy(ciphertxtMsg, 0, iv, 0, iv.Length);
             aes.IV = iv;
 
             var decrypt = aes.CreateDecryptor(aes.Key, aes.IV);

@@ -29,7 +29,6 @@ public class MessageListener : IMessageListener
 
     public async Task Start()
     {
-        Console.WriteLine("listening for: "+_loggedInUser.Username);
         _bus = RabbitHutch.CreateBus(_config.GetConnectionString("RabbitMQ") ?? throw  new InvalidOperationException("Connection string is null"));
 
         while (true)
@@ -47,7 +46,7 @@ public class MessageListener : IMessageListener
 
     private void HandlePublicKeyReceived(PublicKeyMessage message)
     {
-        Console.WriteLine($"Public key received from {message.Publisher}");
+        Console.WriteLine("received public key from " + message.Publisher);
         // using (var dh = new ECDiffieHellmanCng())
         // {
         //     dh.KeyDerivationFunction = ECDiffieHellmanKeyDerivationFunction.Hash;

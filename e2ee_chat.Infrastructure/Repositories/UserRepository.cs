@@ -9,12 +9,14 @@ namespace e2ee_chat.Infrastructure.Repositories;
 
 public class UserRepository : IUserRepository
 {
-    private readonly DbContext _context;
+    private readonly DbContext _keycontext;
+    private readonly DbContext _usercontext;
     private readonly UserConverter _converter;
 
     public UserRepository(UserConverter converter)
     {
-        _context = new DbContext("UserDb");
+        _usercontext = new DbContext("UserDb");
+        _keycontext = new DbContext("SecureKeys");
         _converter = converter;
     }
 
@@ -23,14 +25,14 @@ public class UserRepository : IUserRepository
         try
         {
             var userSchema = _converter.Convert(user);
-            var userExists = _context.Users.Find(u => u.Email == user.Email).FirstOrDefault();
+            var userExists = _usercontext.Users.Find(u => u.Email == user.Email).FirstOrDefault();
             if (userExists != null)
             {
                 Console.WriteLine("Email is already in use.");
                 return;
             }
-            _context.Users.InsertOne(userSchema);
-            _context.UserKeys.InsertOne(new UserKeys
+            _usercontext.Users.InsertOne(userSchema);
+            _keycontext.UserKeys.InsertOne(new UserKeys
             {
                 UserId = userSchema.Id.ToString()!,
                 IV = user.IV,
@@ -46,8 +48,8 @@ public class UserRepository : IUserRepository
 
     public UserModel GetUser(string email)
     {
-        var user = _context.Users.Find(user => user.Email == email).First();
-        var keys = _context.UserKeys.Find(key => key.UserId == user.Id.ToString()).First();
+        var user = _usercontext.Users.Find(user => user.Email == email).First();
+        var keys = _keycontext.UserKeys.Find(key => key.UserId == user.Id.ToString()).First();
         if (user == null || keys == null)
         {
             throw new InvalidDataException("Wrong email or password");

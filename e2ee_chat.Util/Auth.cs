@@ -53,7 +53,7 @@ public class Auth: IAuthUtil
         var salt = new byte[32];
         rng.GetBytes(salt);
 
-        // use Rfc with 60.000 iterations og sha for password hashing.
+        // use Rfc with 600.000 iterations og sha for password hashing.
         using var df2 = new Rfc2898DeriveBytes(password, salt, 600000, HashAlgorithmName.SHA512);
         aes.Key = df2.GetBytes(256/8);
         var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
