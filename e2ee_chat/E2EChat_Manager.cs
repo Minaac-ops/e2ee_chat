@@ -1,6 +1,4 @@
-using System.ComponentModel.Design;
 using e2ee_chat.Core.Interfaces;
-using e2ee_chat.Core.Interfaces.Messaging;
 using e2ee_chat.Core.Interfaces.Services;
 using e2ee_chat.Core.Models;
 using e2ee_chat.Infrastructure.Messaging;
@@ -13,15 +11,13 @@ public class E2EChatManager
     private readonly IAuthUtil _authUtil;
     private readonly IUserService _userService;
     private readonly IAuthService _authService;
-    private readonly IMessagePublisher _messagePublisher;
     private static UserModel? _loggedInUser;
-    
-    public E2EChatManager(IAuthUtil authUtil, IUserService userService, IAuthService authService, IMessagePublisher messagePublisher)
+
+    public E2EChatManager(IAuthUtil authUtil, IUserService userService, IAuthService authService)
     {
         _authUtil = authUtil;
         _userService = userService;
         _authService = authService;
-        _messagePublisher = messagePublisher;
         Welcome();
     }
 
@@ -36,7 +32,6 @@ public class E2EChatManager
             switch (option)
             {
                 case "1":
-                    Console.WriteLine("Not implemented");
                     Login();
                     break;
                 case "2":
@@ -46,11 +41,12 @@ public class E2EChatManager
                     Thread.Sleep(1000);
                     continue;
             }
+
             break;
         }
     }
 
-    private void Login()
+    private async void Login()
     {
         Console.Clear();
         Console.WriteLine("You are about to log in. Please enter your...");
@@ -64,63 +60,13 @@ public class E2EChatManager
             var user = _authService.Login(email, pass);
             _loggedInUser = user;
             Console.Clear();
-            Menu();
+            await Menu();
         }
         catch (Exception e)
         {
-            Task.Delay(2000).Wait();
+            Thread.Sleep(5000);
             Welcome();
         }
-    }
-
-    private async void Menu()
-    { 
-        Console.WriteLine("Welcome "+ _loggedInUser.Username);
-        while (true)
-        {
-            Console.WriteLine("Your options: \n1. Messages | 2. Logout");
-            var option = Console.ReadLine();
-            switch (option)
-            {
-                case "1":
-                    Console.Clear();
-                    await Messaging();
-                    break;
-                case "2":
-                    Console.WriteLine("Logging out...");
-                    Thread.Sleep(1000);
-                    _loggedInUser = null;
-                    Welcome();
-                    break;
-                default:
-                    Thread.Sleep(1000);
-                    continue;
-            }
-            break;
-        }
-    }
-
-    private async Task Messaging()
-    {
-        Console.WriteLine("Email of the person you want to chat with: ");
-        var receiver = Console.ReadLine();
-        Console.WriteLine("Chat with " + receiver);
-        //var sharedSecret = _authUtil.GenerateSharedSecret(_loggedInUser.PublicKey);
-        
-        var listener = new MessageListener(_loggedInUser,_authUtil);
-        var listenerTask = Task.Run(() => listener.Start());
-        var publisher = new MessagePublisher();
-        var _instance = Crypto.Instance;
-        var publicKey = _instance.GetPublicKey();
-        publisher.PublishPublicKey(publicKey, _loggedInUser.Username, receiver);
-        Thread.Sleep(30000);
-        while (true)
-        {
-            var msg = Console.ReadLine();
-            publisher.PublishMessage(receiver, _loggedInUser.Username, _instance.Encrypt(msg));
-            if (msg.ToLower() == "exit") break;
-        }
-        await listenerTask;
     }
 
     private void Register()
@@ -145,21 +91,102 @@ public class E2EChatManager
             if (newUser.IsPasswordValid())
             {
                 var user = _authUtil.PasswordHasher(email!, username!, password!);
-                
+
                 _userService.CreateUser(user);
                 Thread.Sleep(3000);
                 Welcome();
             }
             else
             {
-                Console.WriteLine("Password must be at least 8 characters and must contain small and capital letters, digits and at least one special character.");
+                Console.WriteLine(
+                    "Password must be at least 8 characters and must contain small and capital letters, digits and at least one special character.");
                 Thread.Sleep(5000);
                 Register();
             }
         }
         catch (Exception e)
         {
-            Console.WriteLine("Password must be at least 8 characters and must contain small and capital letters, digits and at least one special character.");
+            Console.WriteLine(
+                "Password must be at least 8 characters and must contain small and capital letters, digits and at least one special character.");
         }
+    }
+
+
+    private async Task Menu()
+    {
+        try
+        {
+            Console.WriteLine($"Welcome {_loggedInUser.Username}");
+            while (true)
+            {
+                Console.WriteLine("Your options: \n1. Messages | 2. Send message request");
+                var listener = new MessageListener(_loggedInUser);
+                Task.Run(() => listener.ListenForMessageRequest());
+                var option = Console.ReadLine();
+                switch (option)
+                {
+                    case "1":
+                        Console.Clear();
+                        await Messaging();
+                        break;
+                    case "2":
+                        Console.Clear();
+                        MessageRequest();
+                        break;
+                    default:
+                        Thread.Sleep(1000);
+                        continue;
+                }
+                break;
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+
+    private async Task Messaging()
+    {
+        Console.WriteLine("Email of the person you want to chat with: ");
+        var receiver = Console.ReadLine();
+        try
+        {
+            var _instance = Crypto.Instance;
+            Console.WriteLine("Wait...");
+            Thread.Sleep(4000);
+            Console.Clear();
+            Console.WriteLine($"Chat with {receiver}");
+            Console.WriteLine("This chat is end-2-end encrypted.");
+
+            var listener = new MessageListener(_loggedInUser);
+            Task.Run(() => listener.Start());
+            var publisher = new MessagePublisher();
+            Thread.Sleep(2000);
+
+            while (true)
+            {
+                var msg = Console.ReadLine();
+                publisher.PublishMessage(receiver, _loggedInUser.Email, _instance.Encrypt(msg));
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"{receiver} can't chat right now.");
+        }
+    }
+
+    private async void MessageRequest()
+    {
+        Console.WriteLine("Write the email of the person you want to send a request to");
+        var receiver = Console.ReadLine();
+        var messagePublisher = new MessagePublisher();
+        var instance = Crypto.Instance;
+        messagePublisher.PublishPublicKey(instance.GetPublicKey(), _loggedInUser.Email, receiver);
+        Thread.Sleep(2000);
+        Console.Clear();
+        await Menu();
     }
 }

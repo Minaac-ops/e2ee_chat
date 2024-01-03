@@ -1,11 +1,10 @@
-using e2ee_chat.Core.Interfaces.Messaging;
 using e2ee_chat.Core.Models;
 using EasyNetQ;
 using Microsoft.Extensions.Configuration;
 
 namespace e2ee_chat.Infrastructure.Messaging;
 
-public class MessagePublisher : IMessagePublisher
+public class MessagePublisher
 {
     private IBus _bus;
     private readonly IConfiguration _config;
@@ -32,13 +31,21 @@ public class MessagePublisher : IMessagePublisher
 
     public void PublishPublicKey(byte[] publicKey, string publisher, string receiver)
     {
-        var message = new PublicKeyMessage
+        try
         {
-            PublicKey = publicKey,
-            Publisher = publisher,
-            Receiver = receiver
-        };
-        _bus.PubSub.Publish(message, $"{receiver}");
-        Console.WriteLine("Published my public key to "+ receiver);
+            var message = new PublicKeyMessage
+            {
+                PublicKey = publicKey,
+                Publisher = publisher,
+                Receiver = receiver
+            };
+            _bus.PubSub.Publish(message, $"{receiver}");
+            Console.WriteLine($"Message request send to {message.Receiver}. You will be notified if they accept.");
+            Thread.Sleep(3000);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Contact support.");
+        }
     }
 }

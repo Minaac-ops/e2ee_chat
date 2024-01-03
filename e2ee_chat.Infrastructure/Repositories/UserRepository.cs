@@ -2,7 +2,6 @@ using e2ee_chat.Core.Interfaces.Repositories;
 using e2ee_chat.Core.Models;
 using e2ee_chat.Infrastructure.Converters;
 using e2ee_chat.Infrastructure.Schemas;
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace e2ee_chat.Infrastructure.Repositories;

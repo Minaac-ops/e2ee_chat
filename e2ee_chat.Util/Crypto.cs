@@ -8,7 +8,7 @@ public class Crypto
     private ECDiffieHellmanCng _cng;
     private byte[] _sharedSecret;
     private byte[] _publicKey;
-
+    
     private Crypto()
     {
         _cng = new ECDiffieHellmanCng();
@@ -24,7 +24,6 @@ public class Crypto
             {
                 _instance = new Crypto();
             }
-
             return _instance;
         }
     }
@@ -39,24 +38,10 @@ public class Crypto
         _sharedSecret = _cng.DeriveKeyMaterial(CngKey.Import(publicKeyPartner, CngKeyBlobFormat.EccPublicBlob));
     }
 
-    public byte[] GetSharedSecret()
-    {
-        return _sharedSecret;
-    }
-
-    private byte[] DeriveKeyChain(byte[] key, byte[] userSalt)
-    {
-        using (var kdf = new Rfc2898DeriveBytes(key,userSalt,256/8,HashAlgorithmName.SHA512))
-        {
-            return kdf.GetBytes(256 / 8);
-        }
-    }
-
     public byte[] Encrypt(string plaintxtMsg)
     {
         try
         {
-            
             using var aes = Aes.Create();
 
             aes.Key = _sharedSecret;

@@ -16,21 +16,6 @@ public class UserConverter
         };
     }
 
-    public IEnumerable<UserModel> Convert(List<User> users, List<UserKeys> keys)
-    {
-        var combinedUsers = users.Select(user => new UserModel
-        {
-            Id = user.Id.ToString()!,
-            Email = user.Email,
-            Username = user.Username,
-            Random = user.RandomString,
-            EncryptedRandom = user.EncryptedRandom,
-            IV = keys.First(k => k.UserId == user.Id.ToString())!.IV,
-            PasswordSalt = keys.First(k => k.UserId == user.Id.ToString())!.Passwordsalt
-        });
-        return combinedUsers;
-    }
-
     public UserModel Convert(User userSchema, UserKeys keys)
     {
         var combinedUser = new UserModel

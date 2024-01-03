@@ -13,6 +13,11 @@ public class AuthService : IAuthService
     {
         _userService = userService;
     }
+
+    public byte[] GetKey()
+    {
+        return _key;
+    }
     
     private bool AuthenticateLogin(UserModel user, string providedPassword)
     {

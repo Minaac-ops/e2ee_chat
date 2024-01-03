@@ -9,5 +9,4 @@
     <ItemGroup>
       <ProjectReference Include="..\e2ee_chat.Core\e2ee_chat.Core.csproj" />
     </ItemGroup>
-
 </Project>
