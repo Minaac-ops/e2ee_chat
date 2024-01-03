@@ -53,7 +53,7 @@ public class E2EChatManager
         Console.WriteLine("Email: ");
         var email = Console.ReadLine();
         Console.WriteLine("Password: ");
-        var pass = Console.ReadLine();
+        var pass = ReadPassword();
 
         try
         {
@@ -78,7 +78,7 @@ public class E2EChatManager
         Console.WriteLine("Username: ");
         var username = Console.ReadLine();
         Console.WriteLine("Password: ");
-        var password = Console.ReadLine();
+        var password = ReadPassword();
 
         try
         {
@@ -188,5 +188,25 @@ public class E2EChatManager
         Thread.Sleep(2000);
         Console.Clear();
         await Menu();
+    }
+
+    private static string ReadPassword()
+    {
+        var password = "";
+        ConsoleKeyInfo key;
+        do
+        {
+            key = Console.ReadKey(intercept: true);
+            if (key.Key == ConsoleKey.Backspace && password.Length > 0)
+            {
+                password = password[0..^1];
+                Console.Write("\b \b");
+            } else if (!char.IsControl(key.KeyChar))
+            {
+                password += key.KeyChar;
+                Console.Write("*");
+            }
+        } while (key.Key != ConsoleKey.Enter);
+        return password;
     }
 }
